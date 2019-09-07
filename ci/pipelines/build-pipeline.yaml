@@ -1,0 +1,68 @@
+resource_types:
+  - name: merge-request
+    type: docker-image
+    source:
+      repository: mastertinner/gitlab-merge-request-resource
+
+resources:
+  - name: repo-mr
+    type: merge-request
+    source:
+      uri: ((gitlab.uri))
+      private_token: ((gitlab.private-token))
+      private_key: ((ssh-private-key))
+  - name: microservice-image
+    type: docker-image
+    source:
+      repository: ((docker.domain))/vin-dev/microservice
+      username: ((docker.username))
+      password: ((docker.password))
+
+jobs:
+  - name: test-merge-request
+    plan:
+      - get: repo
+        resource: repo-mr
+        trigger: true
+      - put: repo-mr
+        params:
+          repository: repo
+          status: running
+      - task: extract-git-hash
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: alpine/git
+              tag: 1.0.7
+          inputs:
+          - name: repo
+          outputs: 
+          - name: version
+          run:
+            path: /bin/sh
+            args:
+            - -c
+            - |
+              cd repo
+              git rev-parse HEAD > ../version/full-hash
+              head -c 7 ../version/full-hash > ../version/version
+              cd ../version
+              cat version
+      - put: microservice-image
+        params:
+          build: repo
+          tag_file: version/version
+        get_params:
+          skip_download: true
+    on_failure:
+      put: repo-mr
+      params:
+        repository: repo
+        status: failed
+    on_success:
+      put: repo-mr
+      params:
+        repository: repo
+        status: success

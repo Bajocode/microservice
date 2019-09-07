@@ -1,0 +1,18 @@
+{
+  "extends": "tslint-config-airbnb",
+  "rules": {
+    "member-access": [
+      true,
+      "check-accessor",
+      "check-constructor"
+    ],
+    "file-name-casing": [
+      true,
+      {
+        "main.ts": "camel-case",
+        ".ts": "pascal-case"
+      }
+    ],
+    "eofline": false
+  }
+}

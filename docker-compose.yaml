@@ -1,0 +1,17 @@
+# An example docker-compose file
+# Purpose: ensure third party dependencies are enabled during development
+# This is just an example, normally put the ENV vars in the config schema etc.
+# This configuration allows for a localhost connection to the containerized DB
+# URL to use withing the api: `mongodb://localhost/${config.MONGODB_DATABASE}`
+---
+version: '3'
+
+services:
+  mongodb:
+    image: 'bitnami/mongodb:4.0.9'
+    ports:
+    - "27017:27017"
+    environment:
+    - MONGODB_USERNAME=test
+    - MONGODB_PASSWORD=test
+    - MONGODB_DATABASE=notes
